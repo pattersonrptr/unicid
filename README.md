@@ -8,7 +8,7 @@ Trabalhos do curso de **Ciência da Computação** da **UNICID — Universidade 
 
 | Pasta | Descrição | Linguagem | Disciplina |
 |---|---|---|---|
-| [`PLP-JavaCC-Compiller/`](PLP-JavaCC-Compiller/) | Compilador gerado com JavaCC (análise léxica e sintática) | Java | Projeto de Linguagens de Programação |
+| [`PLP-JavaCC-Compiller/`](PLP-JavaCC-Compiller/) | Compilador completo da linguagem X++ (JavaCC) até bytecode JVM, com testes de ponta a ponta | Java | Projeto de Linguagens de Programação |
 | [`mealy-and-moore-machines/`](mealy-and-moore-machines/) | Simulação de máquinas de Mealy e de Moore | C | Linguagens Formais e Autômatos |
 | [`graph_theory_python/`](graph_theory_python/) | Grafos com lista e matriz de adjacência | Python | Teoria dos Grafos |
 | [`process_scheduler/`](process_scheduler/) | Simulador de escalonamento com 5 políticas (FCFS, SJF, SRTF, RR, Prioridade + aging), métricas, testes e interface Swing | Java | Sistemas Operacionais |
