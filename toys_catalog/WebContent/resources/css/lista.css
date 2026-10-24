@@ -1,0 +1,83 @@
+@CHARSET "ISO-8859-1";
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+img {
+	max-width: 200px;
+	max-height: 200px;
+}
+
+figcaption {
+	font-weight: bold;
+	color: #666; 
+}
+
+table {
+    width: 100%;
+}
+
+
+td {
+	text-align: left;
+	padding: 10px 0 20px;
+}
+
+table, th, td {
+   border: none;
+}
+
+div.main_content {
+    background: linear-gradient(to bottom, 
+    rgba(0, 0, 255, 0.1) 0%, rgba(190, 220, 245, 0.9) 50%, rgba(0, 0, 0, 0.1) 100%), 
+ 	url("../images/star.png");
+    background-position: center;
+    background-repeat: no-repeat ;
+    background-attachment: 50% 50%;
+    
+    margin-bottom: 20px;
+}
+
+/* Estilo da tabela de administração */
+.adm_list {
+	border-bottom: 1px solid #D4D4D4 !important;
+	max-height: 250px !important;	
+	overflow: auto;
+}
+
+/*  Estilos da barra de rolagem, só funciona em navegadores chrome e safari */	
+.adm_list::-webkit-scrollbar {
+    width: 12px;
+}
+ 
+.adm_list::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px;
+}
+ 
+.adm_list::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0 , 0, 0.5); 
+}
+
+.adm_list::-webkit-scrollbar-thumb:hover {
+    border-radius: 10px;
+    background-color: rgba(200, 200, 255, 0.5);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0 , 0, 0.5); 
+}
+
+div.main_content, .adm_list, .adm_list::-webkit-scrollbar-thumb:hover, .adm_list::-webkit-scrollbar-thumb, .adm_list::-webkit-scrollbar-track, 
+.adm_list::-webkit-scrollbar, table {
+	border-radius: 20px !important;
+}
+
+
+
+
+
+
+
+
+

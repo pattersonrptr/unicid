@@ -1,0 +1,25 @@
+@CHARSET "ISO-8859-1";
+
+body {
+	margin: 0;
+	padding: 0;
+}
+table {
+	margin-top: 57px;
+}
+img {
+	max-width: 200px;
+	max-height: 200px;
+}
+
+#brinquedoImg {
+	width: 300px;
+	float: left;
+}
+#brinquedoDados {
+	margin-left: 320px;
+}
+#brinquedoDetalhes {
+	margin-top: 30px;
+	clear: both;
+}

@@ -1,0 +1,62 @@
+@CHARSET "ISO-8859-1";
+
+@import url(http://fonts.googleapis.com/css?family=Lobster);
+
+h1  {
+	font-family: 'Lobster', sans-serif;
+	font-size: 36px;
+	font-style: italic;
+	font-weight: bold; 
+	font-stretch: expanded;
+	color: #FFF;
+    text-shadow: 0px 0px 5px #555;
+}
+
+body {
+	padding-top: 180px;
+	padding-bottom: 20px;
+}
+
+#currentPage a {
+	text-decoration: none;
+}
+
+#SiteBody {
+	width: 1024px;
+	margin: 0 auto;
+	background-color: white;
+}
+
+iframe {
+	border: none;
+}
+
+#baner {
+	background-color: #b7c6d0;
+	background-image: url(../images/star.png);
+	background-repeat: no-repeat;
+	background-attachment: relative;
+	background-position: 5% 45%;
+	
+	box-shadow: 0 0 20px #000, inset 0 20px 20px -20px rgba(0,0,0,0.8);
+	
+	margin-bottom: 20px;
+	padding: 20px 200px 20px;
+	
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 9999;
+}
+
+footer {
+	clear: both;
+	text-align: center;
+	position: fixed;
+	left: 0px;
+	bottom: 0px;
+	height: 30px;
+	width: 100%;
+	background: #999;
+}
