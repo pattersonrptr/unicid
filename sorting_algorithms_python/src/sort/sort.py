@@ -10,10 +10,10 @@ import math
 def bubble(nlist):
     nlist = list(nlist)
     size = len(nlist) - 1
-    
-    if size <= 1:
+
+    if size < 1:
         return nlist
-    
+
     swapped = True
     
     for i in range(size):
@@ -74,30 +74,38 @@ def quick(nlist):
     if size <= 1:
         return nlist
     
-    pivot = nlist[0]
+    # Middle pivot: avoids the O(n²) worst case (and the recursion limit) on already sorted input.
+    # Three-way partition keeps equal keys in their original order, so the sort is stable.
+    pivot = nlist[size // 2]
     lr = [x for x in nlist if x < pivot]    # lower
-    gt = [x for x in nlist[1:] if x >= pivot]   # greater
-    
-    return quick(lr) + [pivot] + quick(gt)
+    eq = [x for x in nlist if x == pivot]   # equal
+    gt = [x for x in nlist if x > pivot]    # greater
+
+    return quick(lr) + eq + quick(gt)
 
 
 def merge(nlist):
     if len(nlist) < 2:
-        return nlist
-    
+        return list(nlist)
+
     result, mid = list(), len(nlist) // 2
-    
+
     l = merge(nlist[:mid])  # left
     r = merge(nlist[mid:])  # right
-    
-    while (len(l) > 0) and (len(r) > 0):
-        if l[0] > r[0]:
-            result.append(r.pop(0))
-        else: 
-            result.append(l.pop(0))
-            
-    result.extend(l + r)
-    
+    i = j = 0
+
+    # Walks both halves by index: list.pop(0) is O(n) and would make the merge step quadratic.
+    while i < len(l) and j < len(r):
+        if l[i] > r[j]:
+            result.append(r[j])
+            j += 1
+        else:
+            result.append(l[i])
+            i += 1
+
+    result.extend(l[i:])
+    result.extend(r[j:])
+
     return result
 
 
@@ -185,10 +193,17 @@ def counting(alist):
 def radix(aList):
     nlist = list(aList)
     size = len(nlist)
-    
+
     if size < 2:
         return nlist
-    
+
+    # LSD radix works on non-negative digits: sort the magnitudes of the negatives
+    # separately and put them, reversed, before the non-negatives.
+    negatives = [-x for x in nlist if x < 0]
+    if negatives:
+        non_negatives = [x for x in nlist if x >= 0]
+        return [-x for x in reversed(radix(negatives))] + radix(non_negatives)
+
     RADIX = 10
     maxLength = False
     tmp, placement = -1, 1
@@ -198,8 +213,8 @@ def radix(aList):
         buckets = [list() for i in range(RADIX)]
  
         for i in nlist:
-            tmp = int(i / placement)
-            buckets[int(tmp % RADIX)].append(i)
+            tmp = i // placement    # integer division: float division loses precision on large ints
+            buckets[tmp % RADIX].append(i)
             if maxLength and tmp > 0:
                 maxLength = False
  
@@ -312,6 +327,5 @@ def cocktail(aList):
                     swapped = True
         
         i += 1
-        
-        if not swapped:
-            return nlist
+
+    return nlist
