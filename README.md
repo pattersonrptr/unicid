@@ -12,7 +12,7 @@ Trabalhos do curso de **Ciência da Computação** da **UNICID — Universidade 
 | [`mealy-and-moore-machines/`](mealy-and-moore-machines/) | Simulação de máquinas de Mealy e de Moore | C | Linguagens Formais e Autômatos |
 | [`graph_theory_python/`](graph_theory_python/) | Grafos com lista e matriz de adjacência | Python | Teoria dos Grafos |
 | [`process_scheduler/`](process_scheduler/) | Simulador de escalonamento: Round-Robin com preempção por prioridade, interface Swing | Java | Sistemas Operacionais |
-| [`sorting_algorithms_python/`](sorting_algorithms_python/) | 13 algoritmos de ordenação com testes e benchmark | Python | Estruturas de Dados · Análise e Complexidade de Algoritmos |
+| [`sorting_algorithms_python/`](sorting_algorithms_python/) | 15 algoritmos de ordenação por categoria, com testes e benchmark | Python | Estruturas de Dados · Análise e Complexidade de Algoritmos |
 | [`toys_catalog/`](toys_catalog/) | CRUD de catálogo de brinquedos: Servlets + JSP + MySQL | Java | Aplicações Web |
 
 Cada pasta tem seu próprio README.
