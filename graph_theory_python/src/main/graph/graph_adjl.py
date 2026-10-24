@@ -10,7 +10,7 @@ Cons: It's slow for dense graphs. """
 import math
 import re
 
-from collections import defaultdict
+from collections import defaultdict, deque
 
 
 class Vertex:
@@ -182,32 +182,29 @@ class Graph(dict):
             if v in self[u].neighbors:
                 self[u].neighbors.pop(v)
 
-    def is_connected(self, found=set(), start=None):
+    def is_connected(self):
         """
         Checks if the graph is connected.
+        Directed graphs are checked for weak connectivity (edge directions are ignored).
 
-        :param found: A set of vertices found.
-        :param start: The initial vertex.
         :return: True if it's a connected graph or False otherwise
         """
 
-        vertices = list(self.keys())
-        vertices.sort()
-
-        if not start:
-            start = vertices[0]
-
-        found.add(start)
-
-        if len(found) != len(vertices):
-            for v in self[start].get_neighbors():
-                if v not in found:
-                    if self.is_connected(found, v):
-                        return True
-        else:
+        if not self:
             return True
 
-        return False
+        start = min(self.keys())
+        found = {start}
+        stack = [start]
+
+        while stack:
+            vertex = self[stack.pop()]
+            adjacent = set(vertex.neighbors) | set(vertex.in_neighbors) | set(vertex.out_neighbors)
+            for v in adjacent - found:
+                found.add(v)
+                stack.append(v)
+
+        return len(found) == len(self)
 
     @property
     def min_degree(self):
@@ -268,41 +265,45 @@ class Graph(dict):
     @property
     def density(self):
         """
-        Calculates the density of the graph using the formula:
-        2 * edges / (vertices * (vertices - 1))
+        Calculates the density of the graph: the ratio between the existing edges and the maximum possible.
+
+        Directed: arcs / (V * (V - 1))
+        Undirected: 2 * edges / (V * (V - 1))
+
+        `edges` yields each undirected edge once per endpoint, so both cases reduce to
+        len(edges) / (V * (V - 1)). Loops are ignored and parallel edges count once.
 
         :return: The graph density value
         """
 
         v = len(self.keys())
-        e = len(list(self.edges))
+        e = sum(1 for (a, b) in self.edges if a != b)
 
-        return 2.0 * e / (v * (v - 1))
+        return e / (v * (v - 1))
 
     @property
     def diameter(self):
         """
-        Calculate the diameter of a graph by finding the largest possible path
-        between the two vertices in the graph.
+        Calculate the diameter of a graph: the greatest distance (number of edges in the shortest path)
+        between any two vertices. Runs a BFS from every vertex; unreachable pairs are ignored.
 
         :return: The diameter of the graph
         """
 
-        v = list(self.vertices)
+        diameter = 0
 
-        pairs = [(v[i], v[j]) for i in range(len(v) - 1) for j in range(i + 1, len(v))]
+        for start in self:
+            distance = {start: 0}
+            queue = deque([start])
 
-        smallest_paths = list()
+            while queue:
+                current = queue.popleft()
+                for v in self[current].get_neighbors():
+                    if v not in distance:
+                        distance[v] = distance[current] + 1
+                        queue.append(v)
 
-        for (s, e) in pairs:
-            paths = self.bfs_paths(s, e)
-            smallest = sorted(paths, key=lambda x: len(x))
-            if smallest:
-                smallest_paths.append(smallest[0])
-
-        smallest_paths.sort(key=len)
-
-        diameter = len(smallest_paths[-1])
+            diameter = max(diameter, max(distance.values()))
 
         return diameter
 
@@ -622,8 +623,9 @@ class Graph(dict):
             raise Exception('Start vertex cannot be found in the graph.')
         if target not in self:
             raise Exception('The target vertex does not exist in the graph.')
-        if not self[target].get_neighbors():
-            raise Exception('The target vertex is unreachable')
+
+        if not visited:
+            distances[start] = 0
 
         if start == target:
             path = list()
@@ -634,11 +636,9 @@ class Graph(dict):
                 ant = previous.get(ant, None)
             path.reverse()
 
-            return 'Smaller path: {}\nWeight: {}'.format(path, distances[target])
+            return 'Shortest path: {}\nWeight: {}'.format(path, distances[target])
 
         else:
-            if not visited:
-                distances[start] = 0
             for neighbor in self[start].get_neighbors():
                 if neighbor not in visited:
                     new_distance = distances[start] + float(min(self[start].get_neighbors()[neighbor]))
@@ -654,6 +654,9 @@ class Graph(dict):
                 if k not in visited:
                     unvisited[k] = distances.get(k, math.inf)
             x = min(unvisited, key=unvisited.get)
+
+            if unvisited[x] == math.inf:
+                raise Exception('The target vertex is unreachable')
 
             return self.dijkstra(x, target, visited, distances, previous)
 
@@ -698,7 +701,7 @@ class Graph(dict):
     matriz incidencia
     ver se são isomorfos
     árvores e arvores geradoras
-    florestas \||||||
+    florestas
     homromorfos
     caminho euleriano e hamiltoniano
     V. J. Havel (1955) e S. L. Hakimi

@@ -12,9 +12,10 @@ class Vertex:
 
 
 class Graph:
-    vertices = dict()
-    edges = list()
-    edges_indices = dict()
+    def __init__(self):
+        self.vertices = dict()
+        self.edges = list()
+        self.edges_indices = dict()
 
     def add_vertex(self, vertex):
         if isinstance(vertex, Vertex) and vertex.name not in self.vertices:
@@ -47,9 +48,9 @@ class Graph:
         for v, i in sorted(self.edges_indices.items()):
             matrix += v + ' '
 
-            for j in range(len(self.edges)):
+            for _, j in sorted(self.edges_indices.items()):
                 e = self.edges[i][j]
-                matrix += (e if str(e) != 'inf' else '∞') + ' '
+                matrix += (str(e) if e != float('inf') else '∞') + ' '
 
             matrix += '\n'
 
