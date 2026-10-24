@@ -1,33 +1,51 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
  * PainelEscalonador - Painel que contém todos os componentes
  * gráficos e manipula a classe Escalonador.
- * 
+ *
+ * Toda a atualização da tela acontece em um javax.swing.Timer, que roda na
+ * thread de eventos do Swing (EDT): componentes Swing não são thread-safe.
+ *
  * @author patterson
  *
  */
 public class PainelEscalonador extends JDesktopPane {
 
 	private static final long serialVersionUID = 4628817960428136689L;
+
+	/** Intervalo de atualização da tela, em milissegundos. */
+	private static final int ATUALIZACAO_TELA = 50;
+
+	/** Linha de base do gráfico de barras; a barra mais alta (TEMPO_MAX) sobe 100 pixels. */
+	private static final int BASE_BARRAS = 590;
+	private static final int LARGURA_BARRA = 20;
+	private static final int PASSO_BARRA = 25;
+
+	private static final Color COR_EXEC = new Color(10, 25, 125);
+	private static final Color COR_PRONTO = new Color(60, 110, 200);
+	private static final Color COR_ESPERA = Color.LIGHT_GRAY;
 
 	protected Escalonador escalonador;
 
@@ -36,110 +54,139 @@ public class PainelEscalonador extends JDesktopPane {
 	private JLabel lblPid;
 	private JLabel lblNome;
 	private JLabel lblTempo;
-	private JLabel lblProcessoExec;
+	private JLabel lblPrioridade;
+	private JLabel lblTempoRestante;
 
+	private JLabel lblRelogio, lblFinalizados, lblEspera, lblTurnaround, lblResposta, lblCPU, lblTrocas;
 
 	private DefaultListModel<String> listModel, listModelEsp;
-	private JLabel lblPrioridade;
 
-	int listCont = 0;
-	private JLabel lblTempoRestante;
-	private JScrollPane scrollPane_1;
-	private JList<String> list_1;
+	private JComboBox<Politica> cbPolitica;
 
 	private Queue<Integer> pids;
 	private JSlider slider;
 
 	/**
-	 * Construtor - Inicía o Escalonador, inicía os componentes gráficos
-	 * e chama métodos que atualizam as listas de pronto e espera 
-	 * através de threads que as monitoram. Também chama o método
-	 * repaintTh(), que implementa uma Thread responsável por repintar
-	 * os gráficos. 
+	 * Construtor - Inicia o Escalonador e seu relógio, os componentes gráficos
+	 * e o Timer que atualiza a tela.
 	 */
 	public PainelEscalonador() {
 
 		pids = new LinkedList<>();
-
-		try {
-			escalonador = new Escalonador();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 		geraPids(1000);
+
+		escalonador = new Escalonador();
+		escalonador.iniciar();
+
 		initComponents();
-		verificaProcessoExec();
-		atualizaListaProcessos();
-		atualizaListaEspera();
-		repaintTh();
+
+		new Timer(ATUALIZACAO_TELA, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				atualizaTela();
+			}
+		}).start();
 	}
 
 	/**
-	 * Inicía os componentes gráficos.
+	 * Inicia os componentes gráficos.
 	 */
 	private void initComponents() {
 		setLayout(null);
 
-		JScrollPane scrollPane = new JScrollPane();
+		JLabel lblProntos = new JLabel("Prontos (ordem de atendimento)");
+		lblProntos.setBounds(12, 27, 264, 15);
+		add(lblProntos);
+
+		listModel = new DefaultListModel<>();
+		JScrollPane scrollPane = new JScrollPane(new JList<>(listModel));
 		scrollPane.setBounds(12, 52, 264, 131);
 		add(scrollPane);
 
-		listModel = new DefaultListModel<>();
-		JList<String> list = new JList<>(listModel);
-		scrollPane.setViewportView(list);
+		JLabel lblTrocaContexto = new JLabel("Troca de contexto");
+		lblTrocaContexto.setBounds(294, 27, 264, 15);
+		add(lblTrocaContexto);
 
-		scrollPane_1 = new JScrollPane();
+		listModelEsp = new DefaultListModel<>();
+		JScrollPane scrollPane_1 = new JScrollPane(new JList<>(listModelEsp));
 		scrollPane_1.setBounds(294, 52, 264, 131);
 		add(scrollPane_1);
 
-		listModelEsp = new DefaultListModel<>();
-		list_1 = new JList<>(listModelEsp);
-		scrollPane_1.setViewportView(list_1);
+		// Processo em execução
+		JLabel lblProcessoExec = new JLabel("Processo Exec.");
+		lblProcessoExec.setBounds(22, 195, 112, 15);
+		add(lblProcessoExec);
 
+		lblPid = addLabel("PID:", 22, 221, 138);
+		lblNome = addLabel("Nome:", 22, 248, 138);
+		lblPrioridade = addLabel("Prioridade:", 22, 275, 200);
+		lblTempo = addLabel("Tempo:", 22, 302, 138);
+		lblTempoRestante = addLabel("Tempo Restante:", 22, 329, 209);
+
+		// Política
+		JLabel lblPolitica = new JLabel("Política de escalonamento");
+		lblPolitica.setBounds(580, 27, 230, 15);
+		add(lblPolitica);
+
+		cbPolitica = new JComboBox<>(Politica.values());
+		cbPolitica.setSelectedItem(escalonador.getPolitica());
+		cbPolitica.setBounds(580, 52, 290, 24);
+		cbPolitica.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				escalonador.setPolitica((Politica) cbPolitica.getSelectedItem());
+			}
+		});
+		add(cbPolitica);
+
+		// Métricas
+		JLabel lblMetricas = new JLabel("Métricas");
+		lblMetricas.setFont(lblMetricas.getFont().deriveFont(Font.BOLD));
+		lblMetricas.setBounds(580, 90, 230, 15);
+		add(lblMetricas);
+
+		lblRelogio = addLabel("", 580, 112, 230);
+		lblFinalizados = addLabel("", 580, 132, 230);
+		lblEspera = addLabel("", 580, 152, 230);
+		lblTurnaround = addLabel("", 580, 172, 230);
+		lblResposta = addLabel("", 580, 192, 230);
+		lblCPU = addLabel("", 580, 212, 230);
+		lblTrocas = addLabel("", 580, 232, 230);
+
+		// Botões
 		JButton btnNovoProcesso = new JButton("Novo Processo");
 		btnNovoProcesso.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				PainelEscalonador.this.createInternalFrame();
 			}
 		});
-
 		btnNovoProcesso.setBounds(12, 380, 138, 25);
 		add(btnNovoProcesso);
 
-		lblProcessoExec = new JLabel("Processo Exec.");
-		lblProcessoExec.setBounds(22, 195, 112, 15);
-		add(lblProcessoExec);
+		JButton btnCarga = new JButton("Carga de exemplo");
+		btnCarga.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				for (int[] p : CARGA_EXEMPLO) {
+					int pid = pids.poll();
+					adicionaProcesso(new Processo(pid, "P-" + pid, p[0], p[1]));
+				}
+			}
+		});
+		btnCarga.setBounds(12, 412, 138, 25);
+		add(btnCarga);
 
-		lblNome = new JLabel("Nome:");
-		lblNome.setBounds(22, 248, 138, 15);
-		add(lblNome);
+		JButton btnReiniciar = new JButton("Reiniciar");
+		btnReiniciar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ev) {
+				reiniciar();
+			}
+		});
+		btnReiniciar.setBounds(160, 380, 110, 25);
+		add(btnReiniciar);
 
-		lblPid = new JLabel("PID:");
-		lblPid.setBounds(22, 221, 138, 15);
-		add(lblPid);
-
-		lblTempo = new JLabel("Tempo: ");
-		lblTempo.setBounds(22, 302, 138, 15);
-		add(lblTempo);
-
-		lblPrioridade = new JLabel("Prioridade: ");
-		lblPrioridade.setBounds(22, 275, 112, 15);
-		add(lblPrioridade);
-
-		lblTempoRestante = new JLabel("Tempo Restante: ");
-		lblTempoRestante.setBounds(22, 329, 209, 15);
-		add(lblTempoRestante);
-
-		JLabel lblProntos = new JLabel("Prontos");
-		lblProntos.setBounds(12, 27, 70, 15);
-		add(lblProntos);
-
+		// Velocidade do relógio
 		slider = new JSlider();
 		slider.setMaximum(1000);
 		slider.setMinimum(50);
-		slider.setValue(1000);
+		slider.setValue(Escalonador.getTempoCPU());
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				Escalonador.setTempoCPU(slider.getValue());
@@ -148,64 +195,91 @@ public class PainelEscalonador extends JDesktopPane {
 		slider.setBounds(358, 397, 200, 16);
 		add(slider);
 
-		JLabel lblTempoDaCpu = new JLabel("Tempo da CPU");
-		lblTempoDaCpu.setBounds(406, 369, 125, 15);
-		add(lblTempoDaCpu);
-
-		JLabel lblLento = new JLabel("Lento");
-		lblLento.setBounds(576, 397, 70, 15);
-		add(lblLento);
-
-		JLabel lblRpido = new JLabel("Rápido");
-		lblRpido.setBounds(289, 398, 70, 15);
-		add(lblRpido);
+		addLabel("Tempo da CPU", 406, 369, 125);
+		addLabel("Lento", 576, 397, 70);
+		addLabel("Rápido", 289, 398, 70);
 	}
 
-	/** 
+	/** Processos da carga de exemplo: {tempo, prioridade}. */
+	private static final int[][] CARGA_EXEMPLO = {
+		{30, 3}, {12, 1}, {45, 7}, {8, 5}, {20, 1}
+	};
+
+	private JLabel addLabel(String texto, int x, int y, int largura) {
+		JLabel lbl = new JLabel(texto);
+		lbl.setBounds(x, y, largura, 15);
+		add(lbl);
+		return lbl;
+	}
+
+	/**
 	 * Cria uma lista de PIDs únicos.
 	 * @param max
 	 */
 	private void geraPids(int max) {
 		for (int i = 1; i < max; i++)
 			pids.add(i);
-
 	}
 
 	/**
-	 * verifica se tem um processo em execução. Se tiver, 
-	 * mostra os dados do processo na tela.
+	 * Descarta a simulação atual e começa outra, vazia, com a política selecionada.
 	 */
-	public void verificaProcessoExec() {
-		new Thread() {
-			@Override
-			public void run() {
-				while (true) {
+	private void reiniciar() {
+		escalonador.parar();
+		escalonador = new Escalonador((Politica) cbPolitica.getSelectedItem());
+		escalonador.iniciar();
+		pids.clear();
+		geraPids(1000);
+	}
 
-					try {
-						Thread.sleep(33);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+	/**
+	 * Atualiza rótulos, listas e gráficos com uma cópia do estado do escalonador.
+	 * Roda na EDT, chamado pelo Timer.
+	 */
+	private void atualizaTela() {
+		Processo processoExec = escalonador.getProcessoExec();
 
-					Processo processoExec = escalonador.getProcessoExec();
+		if (processoExec != null) {
+			lblNome.setText("Nome: " + processoExec.getNome());
+			lblPid.setText("PID: " + processoExec.getPID());
+			lblPrioridade.setText("Prioridade: " + prioridade(processoExec));
+			lblTempo.setText("Tempo: " + processoExec.getTempo());
+			lblTempoRestante.setText("Tempo Restante: " + processoExec.getTempoRestante());
+		} else {
+			lblNome.setText("Nome: ");
+			lblPid.setText("PID: ");
+			lblPrioridade.setText("Prioridade: ");
+			lblTempo.setText("Tempo: ");
+			lblTempoRestante.setText("Tempo Restante: ");
+		}
 
-					if (processoExec != null) {
-						lblNome.setText("Nome: " + processoExec.getNome());
-						lblPid.setText("PID: " + processoExec.getPID());
-						lblPrioridade.setText("Prioride: " + processoExec.getPrioridade());
-						lblTempo.setText("Tempo: " + processoExec.getTempo());
-						lblTempoRestante.setText("Tempo Restante: " + processoExec.getTempoRestante());
-					} else {
-						lblNome.setText("Nome: ");
-						lblPid.setText("PID: ");
-						lblPrioridade.setText("Prioride: ");
-						lblTempo.setText("Tempo: ");
-						lblTempoRestante.setText("Tempo Restante: ");
-					}
-				}
-			}
-		}.start();
+		preencheLista(listModel, escalonador.getFila());
+		preencheLista(listModelEsp, escalonador.getFilaEspera());
+
+		Escalonador.Metricas m = escalonador.getMetricas();
+		lblRelogio.setText("Relógio: " + escalonador.getRelogio() + " ticks");
+		lblFinalizados.setText("Finalizados: " + m.finalizados);
+		lblEspera.setText(String.format("Espera média: %.1f", m.esperaMedia));
+		lblTurnaround.setText(String.format("Turnaround médio: %.1f", m.turnaroundMedio));
+		lblResposta.setText(String.format("Resposta média: %.1f", m.respostaMedia));
+		lblCPU.setText(String.format("Uso da CPU: %.1f%%", m.utilizacaoCPU));
+		lblTrocas.setText("Trocas de contexto: " + m.trocasContexto);
+
+		repaint();
+	}
+
+	private void preencheLista(DefaultListModel<String> model, List<Processo> processos) {
+		model.clear();
+		for (Processo p : processos) {
+			model.addElement(p.getNome() + "  Prioridade: " + prioridade(p) + "  Restante: " + p.getTempoRestante());
+		}
+	}
+
+	/** Prioridade atual, com a original entre parênteses se o aging a alterou. */
+	private static String prioridade(Processo p) {
+		return p.getPrioridade() == p.getPrioridadeOriginal()
+				? Integer.toString(p.getPrioridade())
+				: p.getPrioridade() + " (era " + p.getPrioridadeOriginal() + ")";
 	}
 
 	/**
@@ -234,114 +308,11 @@ public class PainelEscalonador extends JDesktopPane {
 		escalonador.addProcesso(pr);
 	}
 
-	/**
-	 * Monitora a lista de processos prontos e atualiza a 
-	 * JList de processos prontos sempre que houver mudanças
-	 * na fila de prontos do escalonador.
-	 */
-	public void atualizaListaProcessos() {
-		new Thread() {
-			@Override
-			public void run() {
-
-				while(true) {
-
-					try {
-						Thread.sleep(100);
-
-						if (listModel.size() != escalonador.getFila().size()) {
-
-							listModel.clear();
-
-							Iterator<Processo> it = escalonador.getFila().iterator();
-
-							while(it.hasNext()) {
-								Processo p = it.next();
-								listModel.addElement(p.getNome() + " Prioridade: " + p.getPrioridade());
-							}
-						}
-					} catch (InterruptedException  | ArrayIndexOutOfBoundsException ex) {
-						// TODO Auto-generated catch block
-						ex.printStackTrace();
-					}
-				}
-			}
-		}.start();
-	}
-
-	/**
-	 * Monitora a lista de processos em espera e atualiza a 
-	 * JList de processos em espera sempre que houver mudanças
-	 * na fila de espera do escalonador.
-	 */
-	public void atualizaListaEspera() {
-		new Thread() {
-			@Override
-			public void run() {
-
-				while(true) {
-
-					try {
-						Thread.sleep(100);
-
-						if (listModelEsp.size() != escalonador.getFilaEspera().size()) {
-
-							listModelEsp.clear();
-
-							Iterator<Processo> it = escalonador.getFilaEspera().iterator();
-
-							while(it.hasNext()) {
-
-								Processo p = it.next();
-
-								listModelEsp.addElement(p.getNome() + " Prioridade: " + p.getPrioridade());
-							}
-						}
-
-					} catch (InterruptedException  | ArrayIndexOutOfBoundsException ex) {
-						// TODO Auto-generated catch block
-						ex.printStackTrace();
-					}
-				}
-
-			}
-		}.start();
-	}
-
-	/**
-	 * Controla o tempo de atualização dos gráficos
-	 * com base no valor do slider.
-	 */
-	private void sleep() {
-		try {
-			Thread.sleep(slider.getValue());
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Repinta os gráficos e gera o efeito de animação,
-	 * o tempo entre cara repaint depende do tempo definido
-	 * no slider.
-	 */
-	public void repaintTh() {
-		new Thread() {
-			@Override
-			public void run() {
-				while (true) {
-					repaint(); 
-					PainelEscalonador.this.sleep();
-				}
-			}
-		}.start();
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see javax.swing.JComponent#paintComponent(java.awt.Graphics)
-	 * Método que desenha os gráficos de barra dos processos.
+	 * Desenha os gráficos de barra dos processos: altura cinza = tempo total,
+	 * parte colorida = tempo restante, número abaixo = prioridade.
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
@@ -351,102 +322,64 @@ public class PainelEscalonador extends JDesktopPane {
 		g2d.setColor(new Color(185, 185, 185));
 		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
 
-		/* Variáveis que controlam a posição onde cada barra será desenhada
-		 * x e y definem onde as barras serão desenhadas
-		 * largura e altura definem a largura e a altura das barras
-		 */
-		int x = 0, y = 0, largura = 0, altura = 0;
-
-		if (escalonador != null) {
-			Processo p = escalonador.getProcessoExec();
-
-			if (p != null) {
-				x = 250;
-				y = p.getTempo();
-				largura = 20;
-				altura = p.getTempo();
-
-				//				g2d.setColor(Color.BLUE);
-				//				g2d.fillOval(x - 3, 350 - y - 30, 25, 25);
-				//				g2d.setColor(Color.BLACK);
-				//				g2d.drawString("E", x + 5, 350 - y - 13);
-
-				g2d.setColor(Color.DARK_GRAY);
-				g2d.drawRect(x, 350 - y + 1, largura, altura + 1);
-				g2d.setColor(Color.GRAY);
-				g2d.fillRect(x +1 , 352 - y , largura - 1, altura);
-				g2d.setColor(new Color(10, 25, 125));
-				y = altura = p.getTempoRestante();
-				g2d.fillRect(251, 352 - y , largura - 1, altura);
-
-				g2d.setColor(Color.WHITE);
-				g2d.drawString(new Integer(p.getTempoRestante()).toString(), 252, 348);
-				g2d.setColor(Color.BLACK);
-				g2d.drawString(new Integer(p.getPrioridade()).toString(), 255, 370);
-			}
-
-			Iterator<Processo> it = escalonador.getFila().iterator();
-			x = 250;
-			largura = 20;
-
-			while(it.hasNext()) {
-				p = it.next();
-				x += 25;
-				y = p.getTempo();
-				altura = p.getTempo();
-
-				//				g2d.setColor(Color.GREEN);
-				//				g2d.fillOval(x - 3, 350 - y - 30, 25, 25);
-				//				g2d.setColor(Color.BLACK);
-				//				g2d.drawString("P", x + 5, 350 - y - 13);
-
-				g2d.setColor(Color.DARK_GRAY);
-				g2d.drawRect(x, 350 - y + 1, largura, altura + 1);
-				g2d.setColor(Color.GRAY);
-				g2d.fillRect(x + 1, 352 - y , largura - 1, altura);
-				g2d.setColor(new Color(10, 25, 125));
-				y = altura = p.getTempoRestante();
-				g2d.fillRect(x + 1, 352 - y , largura - 1, altura);
-
-				g2d.setColor(Color.WHITE);
-				g2d.drawString(new Integer(p.getTempoRestante()).toString(), x + 3, 348);
-				g2d.setColor(Color.BLACK);
-				g2d.drawString(new Integer(p.getPrioridade()).toString(), x + 5, 370);
-			}
-
-			it = escalonador.getFilaEspera().iterator();
-
-			while(it.hasNext()) {
-				p = it.next();
-				x += 25;
-				y = p.getTempo();
-				altura = p.getTempo();
-
-				//				g2d.setColor(Color.YELLOW);
-				//				g2d.fillOval(x - 3, 350 - y - 30, 25, 25);
-				//				g2d.setColor(Color.BLACK);
-				//				g2d.drawString("W", x + 5, 350 - y - 13);
-
-				g2d.setColor(Color.DARK_GRAY);
-				g2d.drawRect(x, 350 - y + 1, largura, altura + 1);
-				g2d.setColor(Color.GRAY);
-				g2d.fillRect(x + 1, 352 - y , largura - 1, altura);
-				g2d.setColor(Color.LIGHT_GRAY);
-				y = altura = p.getTempoRestante();
-				g2d.fillRect(x + 1, 352 - y , largura - 1, altura);
-
-				g2d.setColor(Color.DARK_GRAY);
-				g2d.drawString(new Integer(p.getTempoRestante()).toString(), x + 3, 348);
-				g2d.setColor(Color.BLACK);
-				g2d.drawString(new Integer(p.getPrioridade()).toString(), x + 5, 370);
-
-			}
+		if (escalonador == null) {
+			return;
 		}
+
+		g2d.setColor(Color.BLACK);
+		g2d.drawString("Processos: barra = tempo total, parte colorida = restante, número abaixo = prioridade", 12, 470);
+
+		int x = 12 - PASSO_BARRA;
+
+		Processo p = escalonador.getProcessoExec();
+		if (p != null) {
+			x += PASSO_BARRA;
+			desenhaBarra(g2d, p, x, COR_EXEC, Color.WHITE);
+		}
+
+		for (Processo pronto : escalonador.getFila()) {
+			x += PASSO_BARRA;
+			desenhaBarra(g2d, pronto, x, COR_PRONTO, Color.WHITE);
+		}
+
+		for (Processo espera : escalonador.getFilaEspera()) {
+			x += PASSO_BARRA;
+			desenhaBarra(g2d, espera, x, COR_ESPERA, Color.DARK_GRAY);
+		}
+
+		// Legenda
+		int ly = 280;
+		desenhaLegenda(g2d, COR_EXEC, "Em execução", ly);
+		desenhaLegenda(g2d, COR_PRONTO, "Pronto", ly + 20);
+		desenhaLegenda(g2d, COR_ESPERA, "Troca de contexto", ly + 40);
 	}
 
-	@Override
-	public void update(Graphics g) {
-		paint(g);
+	private void desenhaBarra(Graphics2D g2d, Processo p, int x, Color cor, Color corTexto) {
+		if (x + LARGURA_BARRA > getWidth()) {
+			return; // fila maior que a tela: as listas acima mostram todos
+		}
+		int altura = p.getTempo();
+
+		g2d.setColor(Color.DARK_GRAY);
+		g2d.drawRect(x, BASE_BARRAS - altura - 1, LARGURA_BARRA, altura + 1);
+		g2d.setColor(Color.GRAY);
+		g2d.fillRect(x + 1, BASE_BARRAS - altura, LARGURA_BARRA - 1, altura);
+
+		int restante = p.getTempoRestante();
+		g2d.setColor(cor);
+		g2d.fillRect(x + 1, BASE_BARRAS - restante, LARGURA_BARRA - 1, restante);
+
+		g2d.setColor(corTexto);
+		g2d.drawString(Integer.toString(restante), x + 3, BASE_BARRAS - 3);
+		g2d.setColor(Color.BLACK);
+		g2d.drawString(Integer.toString(p.getPrioridade()), x + 7, BASE_BARRAS + 16);
+	}
+
+	private void desenhaLegenda(Graphics2D g2d, Color cor, String texto, int y) {
+		g2d.setColor(cor);
+		g2d.fillRect(580, y, 12, 12);
+		g2d.setColor(Color.BLACK);
+		g2d.drawString(texto, 598, y + 11);
 	}
 
 	public Queue<Integer> getPids() {
@@ -457,8 +390,3 @@ public class PainelEscalonador extends JDesktopPane {
 		this.pids = pids;
 	}
 }
-
-
-
-
-

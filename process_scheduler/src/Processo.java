@@ -1,183 +1,134 @@
+/**
+ * Processo simulado. Guarda apenas dados: quem altera o estado é o Escalonador,
+ * a cada tick do relógio, o que evita condições de corrida entre threads.
+ *
+ * @author patterson
+ */
 public class Processo {
 
 	/**
-	 * Número de identificação do processo, cada
-	 * processo deve ter PID único.
-	 */
-	private int PID = 0;
-	
-	/**
-	 * Tempo de duração do processo (burst-time).
-	 */
-	private int tempo = 0;
-	
-	/**
-	 * Tempo restante de execução do processo.
-	 */
-	private int tempoRestante = 0;
-	
-	/**
-	 * Tempo de troca de contexto 
-	 * */
-	private int tempoEmEspera = 2;
-	
-	/**
-	 *  Contador de tempo de troca de contexto 
-	 *  */
-	private int contaTempoEspera = 0;
-	
-	/** 
-	 * Timeslice, constante definida para todos os processos 
-	 */
-	static final int fatiaTempo = 15;
-	
-	/** Contador de fatia de tempo
-	*/
-	private int contFatiaTempo = 0;
-
-	/**
-	 * Prioridade do processo
-	 */
-	private int prioridade = 9;
-
-	/**
-	 * Nome do processo
-	 */
-	private String nome = null;
-
-	/**
 	 * Enum que representa os possíveis estados do processo.
-	 * @author patterson
-	 *
+	 * ESPERA é o tempo de troca de contexto após sair da CPU sem terminar.
 	 */
 	public static enum Estado {
 		PRONTO, EXEC, ESPERA, FINALIZADO
 	}
 
 	/**
-	 * Estado atual do processo.
+	 * Número de identificação do processo, cada processo deve ter PID único.
 	 */
-	private Estado estado = Estado.PRONTO;
+	private final int PID;
+
+	/**
+	 * Nome do processo.
+	 */
+	private final String nome;
+
+	/**
+	 * Tempo de duração do processo (burst time), em ticks.
+	 */
+	private final int tempo;
+
+	/**
+	 * Prioridade definida na criação: de 0 (maior) a 9 (menor).
+	 */
+	private final int prioridadeOriginal;
+
+	// Estado controlado pelo Escalonador ------------------------------------
+
+	Estado estado = Estado.PRONTO;
+
+	/** Tempo restante de execução. */
+	int tempoRestante;
+
+	/** Prioridade efetiva: melhora com o envelhecimento (aging) enquanto o processo espera na fila. */
+	int prioridade;
+
+	/** Ticks executados desde que ganhou a CPU (controle da fatia de tempo). */
+	int contFatiaTempo = 0;
+
+	/** Ticks já passados na troca de contexto. */
+	int contaTempoEspera = 0;
+
+	/** Ticks na fila de prontos desde o último envelhecimento. */
+	int ticksNaFila = 0;
+
+	/** Ordem de entrada na fila de prontos: desempate FIFO entre processos equivalentes. */
+	long ordem = 0;
+
+	/** Instantes (em ticks) de chegada, primeira execução e término. */
+	int chegada = -1, inicio = -1, fim = -1;
 
 	public Processo(int PID, String nome, int tempo, int prioridade) {
 		this.PID = PID;
 		this.nome = nome;
 		this.tempo = tempo;
+		this.prioridadeOriginal = prioridade;
 		this.prioridade = prioridade;
-		tempoRestante = tempo;
-	}	
-
-	/**
-	 * Executa o processo, controla o timeslice e o tempo total restante de execução.
-	 */
-	public void executa()  {
-
-		estado = Estado.EXEC;
-		contFatiaTempo = 0;
-		
-
-		new Thread() {
-			@Override
-			public void run() {
-				while (estado == Estado.EXEC ) {
-					try {
-						Thread.sleep(Escalonador.getTempoCPU());
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					if ( --tempoRestante <= 0) {
-						estado = Estado.FINALIZADO;
-						continue;
-					}
-					
-					if (++contFatiaTempo >= fatiaTempo) {
-						estado = Estado.ESPERA;
-					}
-					
-				}
-			}
-		}.start();
-	}
-	
-	/**
-	 * Coloca o processo em estado de espera (troca de contexto) e conta o tempo de espera.
-	 */
-	public void espera() {
-		
-		estado = Estado.ESPERA;
-		contaTempoEspera = 0;
-
-		new Thread() {
-			@Override
-			public void run() {
-				while (estado == Estado.ESPERA) {
-					
-					try {
-						Thread.sleep(Escalonador.getTempoCPU());
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					if ( ++contaTempoEspera >= tempoEmEspera ) {
-						estado = Estado.PRONTO;
-					}
-				}
-			}
-		}.start();
+		this.tempoRestante = tempo;
 	}
 
+	// Métricas (válidas depois que o processo termina) -----------------------
 
-	// GETTERS & SETTERS ------------------------------------------------------
+	/** Turnaround: tempo total no sistema, da chegada ao término. */
+	public int getTurnaround() {
+		return fim - chegada;
+	}
+
+	/** Tempo de espera: tempo no sistema sem usar a CPU (fila de prontos + trocas de contexto). */
+	public int getTempoEspera() {
+		return getTurnaround() - tempo;
+	}
+
+	/** Tempo de resposta: da chegada até a primeira vez na CPU. */
+	public int getTempoResposta() {
+		return inicio - chegada;
+	}
+
+	// GETTERS ------------------------------------------------------------------
 
 	public int getPID() {
 		return PID;
-	}
-
-	public void setPID(int pID) {
-		PID = pID;
-	}
-
-	public int getTempo() {
-		return tempo;
-	}
-
-	public void setTempo(int tempo) {
-		this.tempo = tempo;
-	}
-
-	public int getTempoRestante() {
-		return tempoRestante;
-	}
-
-	public void setTempoRestante(int tempoRestante) {
-		this.tempoRestante = tempoRestante;
 	}
 
 	public String getNome() {
 		return nome;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
+	public int getTempo() {
+		return tempo;
 	}
 
-	public Estado getEstado() {
-		return estado;
-	}
-
-	public void setEstado(Estado estado) {
-		this.estado = estado;
+	public int getTempoRestante() {
+		return tempoRestante;
 	}
 
 	public int getPrioridade() {
 		return prioridade;
 	}
 
-	public void setPrioridade(int prioridade) {
-		this.prioridade = prioridade;
+	public int getPrioridadeOriginal() {
+		return prioridadeOriginal;
 	}
 
+	public Estado getEstado() {
+		return estado;
+	}
+
+	public int getChegada() {
+		return chegada;
+	}
+
+	public int getInicio() {
+		return inicio;
+	}
+
+	public int getFim() {
+		return fim;
+	}
+
+	@Override
+	public String toString() {
+		return nome;
+	}
 }

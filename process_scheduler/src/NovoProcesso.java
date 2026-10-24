@@ -6,6 +6,7 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 /**
@@ -15,6 +16,9 @@ import javax.swing.JTextField;
 public class NovoProcesso extends JInternalFrame {
 
 	private static final long serialVersionUID = -2925483834821694020L;
+
+	/** Tempo máximo de um processo: a barra do gráfico tem 1 pixel por tick. */
+	static final int TEMPO_MAX = 100;
 	private JTextField txtNome;
 	private JTextField txtPID;
 	private JTextField txtPrio;
@@ -56,7 +60,7 @@ public class NovoProcesso extends JInternalFrame {
 
 		txtPID = new JTextField();
 		txtPID.setBounds(115, 10, 114, 19);
-		txtPID.setText(new Integer(painel.getPids().poll()).toString());
+		txtPID.setText(Integer.toString(painel.getPids().poll()));
 		txtPID.setEditable(false);
 		getContentPane().add(txtPID);
 		txtPID.setColumns(10);
@@ -69,13 +73,13 @@ public class NovoProcesso extends JInternalFrame {
 
 		txtTempo = new JTextField();
 		txtTempo.setBounds(115, 70, 114, 19);
-		txtTempo.setText(new Integer(new Random().nextInt(99) + 1).toString()); // O tempo nunca será maior que 100 nem menor que 1
+		txtTempo.setText(Integer.toString(new Random().nextInt(TEMPO_MAX) + 1)); // de 1 a TEMPO_MAX
 		getContentPane().add(txtTempo);
 		txtTempo.setColumns(10);
 
 		txtPrio = new JTextField();
 		txtPrio.setBounds(115, 101, 114, 19);
-		txtPrio.setText(new Integer(new Random().nextInt(9)).toString());
+		txtPrio.setText(Integer.toString(new Random().nextInt(10))); // de 0 a 9
 		getContentPane().add(txtPrio);
 		txtPrio.setColumns(10);
 
@@ -83,18 +87,32 @@ public class NovoProcesso extends JInternalFrame {
 
 		btnCriar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
+				int tempo, prioridade;
+				try {
+					tempo = Integer.parseInt(txtTempo.getText().trim());
+					prioridade = Integer.parseInt(txtPrio.getText().trim());
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(NovoProcesso.this, "Tempo e prioridade devem ser números inteiros.");
+					return;
+				}
+				if (tempo < 1 || tempo > TEMPO_MAX || prioridade < 0 || prioridade > 9) {
+					JOptionPane.showMessageDialog(NovoProcesso.this,
+							"Tempo deve estar entre 1 e " + TEMPO_MAX + "; prioridade entre 0 e 9.");
+					return;
+				}
+
 				/* Cria novo processo chamando o método adicionaProcesso da
 				 * classe painel escalonador e passando um novo objeto
 				 * processo como parâmetro. */
 				NovoProcesso.this.painel.adicionaProcesso(
 						new Processo(
-								Integer.parseInt(NovoProcesso.this.txtPID.getText()), 
-								NovoProcesso.this.txtNome.getText(), 
-								Integer.parseInt(NovoProcesso.this.txtTempo.getText()), 
-								Integer.parseInt(NovoProcesso.this.txtPrio.getText())
+								Integer.parseInt(NovoProcesso.this.txtPID.getText()),
+								NovoProcesso.this.txtNome.getText(),
+								tempo,
+								prioridade
 								)
 						);
-				
+
 				try {
 					NovoProcesso.this.setClosed(true);
 				} catch (PropertyVetoException e) {

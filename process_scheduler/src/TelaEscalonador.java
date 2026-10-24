@@ -60,12 +60,8 @@ public class TelaEscalonador extends JFrame {
 		mntmSobre.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(TelaEscalonador.this, "Simulador de Escalonamento de Processos.\n\n"
-						+ "Versão: 1.7.1-beta\n\n"
-						+ "Criado por:\n\n"
-						+ "Alexandre CA: 14044676\n"
-						+ "Patterson CA: 14055899\n"
-						+ "Eric Satoshi CA: 14057123\n"
-						+ "Marcelo CA: 14061333\n"
+						+ "Versão: 2.0\n\n"
+						+ "Criado por Patterson.\n"
 						);
 
 			}
