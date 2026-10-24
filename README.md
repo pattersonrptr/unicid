@@ -1,6 +1,6 @@
 # unicid-ciencia-da-computacao
 
-Coursework from the **Computer Science** degree (Ciência da Computação) at **UNICID — Universidade Cidade de São Paulo**, 2016–2018.
+Coursework from the **Computer Science** degree (Ciência da Computação) at **UNICID — Universidade Cidade de São Paulo**, 2014–2018.
 
 ## Projects
 
