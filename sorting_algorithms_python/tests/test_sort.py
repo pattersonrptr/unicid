@@ -1,13 +1,13 @@
 import random
 import unittest
 
-from src.sort import sort as s
+from src import sort as s
 
 ALL = [s.bubble, s.insertion, s.selection, s.quick, s.merge, s.shell, s.heap,
-       s.counting, s.radix, s.bucket, s.gnome, s.comb, s.cocktail]
+       s.counting, s.radix, s.bucket, s.gnome, s.comb, s.cocktail, s.timsort, s.introsort]
 
 # Algorithms whose implementation keeps equal keys in their original order.
-STABLE = [s.bubble, s.insertion, s.quick, s.merge, s.gnome, s.cocktail]
+STABLE = [s.bubble, s.insertion, s.quick, s.merge, s.gnome, s.cocktail, s.timsort]
 
 EDGE_CASES = {
     'empty': [],
@@ -71,6 +71,45 @@ class TestStability(unittest.TestCase):
         for sort in STABLE:
             with self.subTest(algorithm=sort.__name__):
                 self.assertEqual([x.tag for x in sort(items)], expected)
+
+
+class TestHybrids(unittest.TestCase):
+
+    def test_large_random_arrays(self):
+        # Larger than Timsort's min_run and Introsort's insertion threshold, so every code path runs.
+        rng = random.Random(42)
+        for size in (33, 64, 65, 500, 2000):
+            data = [rng.randint(-100, 100) for _ in range(size)]
+            for sort in (s.timsort, s.introsort):
+                with self.subTest(algorithm=sort.__name__, size=size):
+                    self.assertEqual(sort(data), sorted(data))
+
+    def test_timsort_merges_natural_runs(self):
+        data = list(range(500)) + list(range(300, 0, -1)) + list(range(200)) + [7] * 100
+        self.assertEqual(s.timsort(data), sorted(data))
+
+    def test_timsort_stable_across_merges(self):
+        rng = random.Random(7)
+        items = [Item(rng.randint(0, 9), i) for i in range(1000)]
+        expected = [x.tag for x in sorted(items, key=lambda x: x.key)]
+        self.assertEqual([x.tag for x in s.timsort(items)], expected)
+
+    def test_introsort_falls_back_to_heapsort(self):
+        # All-equal input makes every Lomuto partition maximally unbalanced,
+        # so the depth limit is reached and heapsort takes over.
+        data = [5] * 3000 + [1, 9]
+        self.assertEqual(s.introsort(data), sorted(data))
+
+    def test_introsort_on_sorted_and_reversed(self):
+        for data in (list(range(5000)), list(range(5000, 0, -1))):
+            self.assertEqual(s.introsort(data), sorted(data))
+
+
+class TestCategories(unittest.TestCase):
+
+    def test_every_algorithm_has_exactly_one_category(self):
+        categorized = [sort for sorts in s.CATEGORIES.values() for sort in sorts]
+        self.assertEqual(sorted(f.__name__ for f in categorized), sorted(f.__name__ for f in ALL))
 
 
 class TestRegressions(unittest.TestCase):

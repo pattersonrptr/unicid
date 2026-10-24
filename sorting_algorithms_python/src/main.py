@@ -7,15 +7,12 @@ Created on 22 de dez de 2016
 import random
 import time
 
-from sort.sort import bubble, insertion, selection, quick, merge, shell, heap, \
-    counting, radix, bucket, gnome, comb, cocktail
+from sort import CATEGORIES
 
 
-ALGORITHMS = [
-    ('Bubble', bubble), ('Insertion', insertion), ('Selection', selection), ('Quick', quick),
-    ('Merge', merge), ('Shell', shell), ('Heap', heap), ('Counting', counting), ('Radix', radix),
-    ('Bucket', bucket), ('Gnome', gnome), ('Comb', comb), ('Cocktail', cocktail),
-]
+# (name, function, category), in menu order
+ALGORITHMS = [(sort.__name__.capitalize(), sort, category)
+              for category, sorts in CATEGORIES.items() for sort in sorts]
 
 
 def read_int(prompt):
@@ -27,8 +24,8 @@ def read_int(prompt):
 
 
 def test_algorithm(op, vet):
-    name, sort = ALGORITHMS[op]
-    print('\nSorting by', name, 'method...')
+    name, sort, category = ALGORITHMS[op]
+    print('\nSorting by', name, 'method (%s)...' % category)
 
     start = time.perf_counter()
     result = sort(vet)
@@ -61,9 +58,13 @@ def main():
 
         print('\nChoose a Sort Algorithm:')
 
-        for i, (name, _) in enumerate(ALGORITHMS):
-            print(i, ' - ', name)
-        print(len(ALGORITHMS), ' - ', 'All')
+        last_category = None
+        for i, (name, _, category) in enumerate(ALGORITHMS):
+            if category != last_category:
+                print('  %s:' % category)
+                last_category = category
+            print('%4d - %s' % (i, name))
+        print('%4d - %s' % (len(ALGORITHMS), 'All'))
 
         op = read_int('')
 

@@ -1,5 +1,8 @@
 """
-Times every algorithm on the same random arrays and prints a Markdown table.
+Times every algorithm on the same arrays and prints a Markdown table.
+
+Random arrays for each size, plus an already sorted array of the largest size,
+which shows which algorithms are adaptive.
 
 Usage: python benchmark.py [size ...]    (default sizes: 100 1000 5000)
 """
@@ -24,11 +27,13 @@ if __name__ == '__main__':
     sizes = [int(n) for n in sys.argv[1:]] or [100, 1000, 5000]
 
     random.seed(42)
-    arrays = {n: [random.randint(0, 10 * n) for _ in range(n)] for n in sizes}
+    arrays = [('n = %d' % n, [random.randint(0, 10 * n) for _ in range(n)]) for n in sizes]
+    largest = max(sizes)
+    arrays.append(('n = %d, sorted' % largest, list(range(largest))))
 
-    print('| Algorithm | ' + ' | '.join('n = %d' % n for n in sizes) + ' |')
-    print('|---|' + '---:|' * len(sizes))
+    print('| Algorithm | Category | ' + ' | '.join(label for label, _ in arrays) + ' |')
+    print('|---|---|' + '---:|' * len(arrays))
 
-    for name, sort in ALGORITHMS:
-        times = [best_time(sort, arrays[n]) * 1000 for n in sizes]
-        print('| %s | ' % name + ' | '.join('%.2f ms' % t for t in times) + ' |')
+    for name, sort, category in ALGORITHMS:
+        times = [best_time(sort, data) * 1000 for _, data in arrays]
+        print('| %s | %s | ' % (name, category) + ' | '.join('%.2f ms' % t for t in times) + ' |')
