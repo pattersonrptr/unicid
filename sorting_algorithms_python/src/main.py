@@ -1,66 +1,82 @@
-#! /home/patterson/.local/share/virtualenvs/sorting_algorithms_python-KzXNaD-_/bin/python
-
 '''
 Created on 22 de dez de 2016
 
 @author: patterson
 '''
 
-from pyqtgraph.python2_3 import xrange
 import random
 import time
 
 from sort.sort import bubble, insertion, selection, quick, merge, shell, heap, \
     counting, radix, bucket, gnome, comb, cocktail
-    
-    
-def test_all_algoithms():
-    for i in range(len(sort_methods) ):
-        test_algoithm(i)
-        
-        print('Press [Enter] to continue!')
-        input()
 
 
-def test_algoithm(op):
-    print('\nSorting by ', algorithms[op], ' method...')
-    print('\nOrdered array: ')
-            
-    ini = time.time()
-    print(sort_methods[op](vet))
-    fim = time.time()
-    print('\n\nTotal time spent: ', fim-ini)
+ALGORITHMS = [
+    ('Bubble', bubble), ('Insertion', insertion), ('Selection', selection), ('Quick', quick),
+    ('Merge', merge), ('Shell', shell), ('Heap', heap), ('Counting', counting), ('Radix', radix),
+    ('Bucket', bucket), ('Gnome', gnome), ('Comb', comb), ('Cocktail', cocktail),
+]
 
 
-if __name__ == '__main__':
-    
-    algorithms = ['Bubble', 'Insertion', 'Selection', 'Quick', 'Merge',
-                  'Shell', 'Heap', 'Counting', 'Radix', 'Bucket', 'Gnome', 'Comb', 'Cocktail', 'All']
-    
-    sort_methods = [bubble, insertion, selection, quick, merge, shell, heap, counting, radix, bucket, gnome, comb, cocktail]
+def read_int(prompt):
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print('Please type an integer.')
+
+
+def test_algorithm(op, vet):
+    name, sort = ALGORITHMS[op]
+    print('\nSorting by', name, 'method...')
+
+    start = time.perf_counter()
+    result = sort(vet)
+    elapsed = time.perf_counter() - start
+
+    print('\nOrdered array:')
+    print(result)
+    print('\nTime spent sorting: %.6f s' % elapsed)
+
+
+def test_all_algorithms(vet):
+    for op in range(len(ALGORITHMS)):
+        test_algorithm(op, vet)
+        input('\nPress [Enter] to continue!')
+
+
+def main():
 
     while True:
         print('\n\n\tSorting Algorithms\n\n')
-    
-        a_length = int(input('Size of the array to be sorted: '))
-        
-        minimun = int(input('Smallest possible number: '))
-        maximun = int(input('Greater possible number: '))
-        
-        vet = [random.randint(minimun, maximun) for r in xrange(a_length)]
-        
-        print('\nOriginal array: ')
-        print(vet)
-        
-        print('\nChoose a Sort Algorithm: ')
 
-        for i, x in enumerate(algorithms):
-            print(i, ' - ', x)
-        op = input()
-        
-        if op == '13':
-            test_all_algoithms()
-        elif int(op) > 13 or int(op) < 0:
-            print('Invalid option.')
+        a_length = read_int('Size of the array to be sorted: ')
+        minimum = read_int('Smallest possible number: ')
+        maximum = read_int('Largest possible number: ')
+
+        vet = [random.randint(minimum, maximum) for _ in range(a_length)]
+
+        print('\nOriginal array:')
+        print(vet)
+
+        print('\nChoose a Sort Algorithm:')
+
+        for i, (name, _) in enumerate(ALGORITHMS):
+            print(i, ' - ', name)
+        print(len(ALGORITHMS), ' - ', 'All')
+
+        op = read_int('')
+
+        if op == len(ALGORITHMS):
+            test_all_algorithms(vet)
+        elif 0 <= op < len(ALGORITHMS):
+            test_algorithm(op, vet)
         else:
-            test_algoithm(int(op))
+            print('Invalid option.')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (EOFError, KeyboardInterrupt):  # Ctrl+D / Ctrl+C
+        print('\nBye!')
