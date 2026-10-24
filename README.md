@@ -13,7 +13,7 @@ Trabalhos do curso de **Ciência da Computação** da **UNICID — Universidade 
 | [`graph_theory_python/`](graph_theory_python/) | Grafos com lista e matriz de adjacência | Python | Teoria dos Grafos |
 | [`process_scheduler/`](process_scheduler/) | Simulador de escalonamento com 5 políticas (FCFS, SJF, SRTF, RR, Prioridade + aging), métricas, testes e interface Swing | Java | Sistemas Operacionais |
 | [`sorting_algorithms_python/`](sorting_algorithms_python/) | 15 algoritmos de ordenação por categoria, com testes e benchmark | Python | Estruturas de Dados · Análise e Complexidade de Algoritmos |
-| [`toys_catalog/`](toys_catalog/) | CRUD de catálogo de brinquedos: Servlets + JSP + MySQL | Java | Aplicações Web |
+| [`toys_catalog/`](toys_catalog/) | Catálogo de loja de brinquedos com vitrine e administração: Servlets + JSP + JDBC, com procedures e trigger no MySQL/MariaDB | Java | Aplicações Web |
 
 Cada pasta tem seu próprio README.
 
