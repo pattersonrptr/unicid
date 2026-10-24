@@ -1,0 +1,5 @@
+0 Erros léxicos encontrados.
+0 Erros sintáticos encontrados
+Line 25 column 1: Constructor data(int, int, int) already declared
+Line 81 column 1: Method insert(data) already declared
+2 Semantic Errors found (phase 2)

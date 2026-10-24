@@ -1,0 +1,5 @@
+0 Erros léxicos encontrados.
+0 Erros sintáticos encontrados
+Line 6 column 17: Class B not found.
+Line 7 column 17: Variable b not found
+2 Semantic Errors found (phase 3)

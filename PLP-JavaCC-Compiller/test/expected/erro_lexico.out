@@ -1,0 +1,11 @@
+Line 5 - Invalid string found: #
+Line 7 - Invalid string found: ←
+Encountered " <int_constant> "5 "" at line 7, column 13.
+Was expecting one of:
+    <IDENT> ...
+    "[" ...
+    <IDENT> ...
+    
+EOF encontrado prematuramente
+2 Erros léxicos encontrados.
+1 Erros sintáticos encontrados

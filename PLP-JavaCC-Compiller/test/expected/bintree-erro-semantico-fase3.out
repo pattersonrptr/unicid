@@ -1,0 +1,7 @@
+0 Erros léxicos encontrados.
+0 Erros sintáticos encontrados
+Line 32 column 22: Return expression required
+Line 59 column 16: Invalid types for !=
+Line 83 column 14: Invalid types for +
+Line 97 column 8: Constructor bintree(data, int) not found
+4 Semantic Errors found (phase 3)

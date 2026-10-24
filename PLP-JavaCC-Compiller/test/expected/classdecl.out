@@ -1,0 +1,6 @@
+Encountered " "extends" "extends "" at line 1, column 7.
+Was expecting:
+    <IDENT> ...
+    
+0 Erros léxicos encontrados.
+1 Erros sintáticos encontrados

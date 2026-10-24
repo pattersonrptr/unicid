@@ -1,0 +1,5 @@
+0 Erros léxicos encontrados.
+0 Erros sintáticos encontrados
+Line 12 column 19: Class bintree already declared
+Line 17 column 23: Class data already declared
+2 Semantic Errors found (phase 1)

@@ -1,0 +1,10 @@
+Encountered " "int" "int "" at line 8, column 8.
+Was expecting:
+    <IDENT> ...
+    
+Encountered " "class" "class "" at line 17, column 7.
+Was expecting:
+    <IDENT> ...
+    
+0 Erros léxicos encontrados.
+2 Erros sintáticos encontrados

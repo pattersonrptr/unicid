@@ -1,0 +1,12 @@
+Encountered " <IDENT> "text "" at line 5, column 1.
+Was expecting one of:
+    <EOF> 
+    "class" ...
+    
+Encountered " "constructor" "constructor "" at line 16, column 7.
+Was expecting one of:
+    <IDENT> ...
+    "[" ...
+    
+0 Erros léxicos encontrados.
+2 Erros sintáticos encontrados
