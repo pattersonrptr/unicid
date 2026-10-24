@@ -37,41 +37,26 @@ def test():
     print(graph.name + ': \n')
     print(graph)
 
-    print([(v, graph.degree(v)) for v in graph.vertices])
-
-    print(graph.min_degree)
-    print(graph.max_degree)
-
-    print(graph.degree_sequence)
-
-    print('Isolados:', graph.isolated_vertices)
-
-    print(graph.is_connected())
-
-    print(graph.is_degree_sequence(graph.degree_sequence))
-
-    print(graph.diameter)
-
-    print(graph.density)
-
-    print(graph.erdoes_gallai(graph.degree_sequence))
+    print('Degrees:', [(v, graph.degree(v)) for v in graph.vertices])
+    print('Min degree:', graph.min_degree)
+    print('Max degree:', graph.max_degree)
+    print('Degree sequence:', graph.degree_sequence)
+    print('Isolated:', graph.isolated_vertices)
+    print('Connected:', graph.is_connected())
+    print('Is degree sequence:', graph.is_degree_sequence(graph.degree_sequence))
+    print('Diameter:', graph.diameter)
+    print('Density: %.3f' % graph.density)
+    print('Erdős–Gallai:', graph.erdoes_gallai(graph.degree_sequence))
 
     try:
         print(graph.dijkstra('A', 'E'))
     except Exception as e:
-        print('Erro:', e)
+        print('Error:', e)
 
-    for leaf in graph.leaves:
-        print('Folha', leaf)
-
-    for source in graph.sources:
-        print('Source', source)
-
-    for sink in graph.sinks:
-        print('Sink', sink)
-
-    for pendant in graph.pendants:
-        print('Pendants', pendant)
+    print('Leaves:', list(graph.leaves))
+    print('Sources:', list(graph.sources))
+    print('Sinks:', list(graph.sinks))
+    print('Pendants:', list(graph.pendants))
 
 
 if __name__ == "__main__":
