@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
+
+#ifndef OS_WINDOWS
+#include <stdio_ext.h> // __fpurge
+#endif
 
 bool palavra_aceita = true;
 
@@ -60,12 +65,12 @@ void mealy(char * palavra) {
 	
 	printf("Palavra: ");
 	fclear();
-	scanf("%s", palavra);
+	scanf("%49s", palavra);
 
 	palavra_aceita = true;
 	int estado = 0;
 
-	int i = 0;
+	size_t i = 0;
 	for (i = 0; i < strlen(palavra); i++) {
 
 		switch(palavra[i]) {
@@ -137,12 +142,12 @@ void moore(char * palavra) {
 	
 	printf("Palavra: ");
 		fclear();
-		scanf("%s", palavra);
+		scanf("%49s", palavra);
 
 	palavra_aceita = true;
 	int estado = 0;
 
-	int i = 0;
+	size_t i = 0;
 	for (i = 0; i <= strlen(palavra); i++) {
 
 		switch(estado) {
