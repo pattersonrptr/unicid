@@ -1,22 +1,27 @@
-# unicid
+# unicid-ciencia-da-computacao
 
-Trabalhos do curso de **Ciência da Computação** da **UNICID — Universidade Cidade de São Paulo** (2016–2018).
+Coursework from the **Computer Science** degree (Ciência da Computação) at **UNICID — Universidade Cidade de São Paulo**, 2016–2018.
 
-> O TCC — sistema de login por reconhecimento facial (FaceNet + One-Shot Learning / redes siamesas) — tem repositório próprio: **[facial_recog_tcc](https://github.com/pattersonrptr/facial_recog_tcc)**.
+## Projects
 
-## Projetos
-
-| Pasta | Descrição | Linguagem | Disciplina |
+| Folder | Description | Language | Course |
 |---|---|---|---|
-| [`PLP-JavaCC-Compiller/`](PLP-JavaCC-Compiller/) | Compilador completo da linguagem X++ (JavaCC) até bytecode JVM, com testes de ponta a ponta | Java | Projeto de Linguagens de Programação |
-| [`mealy-and-moore-machines/`](mealy-and-moore-machines/) | Simulação de máquinas de Mealy e de Moore | C | Linguagens Formais e Autômatos |
-| [`graph_theory_python/`](graph_theory_python/) | Grafos com lista e matriz de adjacência | Python | Teoria dos Grafos |
-| [`process_scheduler/`](process_scheduler/) | Simulador de escalonamento com 5 políticas (FCFS, SJF, SRTF, RR, Prioridade + aging), métricas, testes e interface Swing | Java | Sistemas Operacionais |
-| [`sorting_algorithms_python/`](sorting_algorithms_python/) | 15 algoritmos de ordenação por categoria, com testes e benchmark | Python | Estruturas de Dados · Análise e Complexidade de Algoritmos |
-| [`toys_catalog/`](toys_catalog/) | Catálogo de loja de brinquedos com vitrine e administração: Servlets + JSP + JDBC, com procedures e trigger no MySQL/MariaDB | Java | Aplicações Web |
+| [`facial_recog_tcc/`](https://github.com/pattersonrptr/facial_recog_tcc) | **Undergraduate thesis.** Passwordless login with face recognition: FaceNet embeddings and one-shot learning with siamese networks | Python | Final thesis (TCC) |
+| [`PLP-JavaCC-Compiller/`](PLP-JavaCC-Compiller/) | Complete compiler for the X++ language, built with JavaCC, down to JVM bytecode, with end-to-end tests | Java | Programming Languages Design |
+| [`process_scheduler/`](process_scheduler/) | CPU scheduling simulator with 5 policies (FCFS, SJF, SRTF, RR, priority with aging), metrics, tests and a Swing interface | Java | Operating Systems |
+| [`sorting_algorithms_python/`](sorting_algorithms_python/) | 15 sorting algorithms organized by category, with tests and a benchmark | Python | Data Structures · Analysis and Complexity of Algorithms |
+| [`graph_theory_python/`](graph_theory_python/) | Graphs with adjacency lists and matrices: BFS, DFS, Dijkstra, connectivity, diameter, with tests | Python | Graph Theory |
+| [`mealy-and-moore-machines/`](mealy-and-moore-machines/) | Mealy and Moore machine simulators | C | Formal Languages and Automata |
+| [`toys_catalog/`](toys_catalog/) | Toy store catalog with storefront and administration: Servlets + JSP + JDBC, with stored procedures and a trigger in MySQL/MariaDB | Java | Web Applications |
 
-Cada pasta tem seu próprio README.
+Each folder has its own README.
 
-## Histórico
+## History
 
-Cada pasta era um repositório separado, trazido para cá com `git subtree`, preservando os commits originais. `toys_catalog/` contém a versão de 2017, anterior à reescrita em Spring Boot.
+Each folder used to be a separate repository and was brought here with `git subtree`, keeping its original commits. `toys_catalog/` holds the 2017 version, before the Spring Boot rewrite.
+
+The thesis stays in its own repository and is included here as a **git submodule**: the `facial_recog_tcc` folder points to a commit of [pattersonrptr/facial_recog_tcc](https://github.com/pattersonrptr/facial_recog_tcc). To clone with it:
+
+```bash
+git clone --recurse-submodules https://github.com/pattersonrptr/unicid-ciencia-da-computacao.git
+```

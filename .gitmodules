@@ -1,0 +1,3 @@
+[submodule "facial_recog_tcc"]
+	path = facial_recog_tcc
+	url = https://github.com/pattersonrptr/facial_recog_tcc.git
