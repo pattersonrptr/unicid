@@ -190,3 +190,10 @@ What changed in 2026:
 - **Regression tests** for compilation and execution (`test/run.sh`).
 
 The repository name keeps the original spelling ("Compiller").
+
+## License
+
+This compiler follows Márcio Delamaro's book *Como Construir um Compilador Utilizando Ferramentas Java* (Novatec, 2004). The support files, the grammar and the code generator built on them, the runtime and the examples in [`exemplos/`](exemplos/) derive from the book and remain under the author's and publisher's copyright. They are **not** covered by this repository's MIT License.
+
+My own work is under the [MIT License](../LICENSE): the X++ test programs in [`testes/`](testes/), the regression tests in [`test/`](test/) and [`build.sh`](build.sh).
+
