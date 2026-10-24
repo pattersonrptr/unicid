@@ -741,9 +741,11 @@ public class CodeGen extends TypeCheck {
         if (r.cont == 1) // dimens�o = 1
          {
             if (c == INT_TYPE) {
-                putCode("newarray I", 1);
+                putCode("newarray int", 1);
             } else {
-                putCode("anewarray " + c.dscJava(), 1);
+                // anewarray recebe o nome interno da classe (java/lang/String), sem o "L...;" do descritor
+                String dsc = c.dscJava();
+                putCode("anewarray " + dsc.substring(1, dsc.length() - 1), 1);
             }
         } else {
             putCode("multianewarray " + EntryTable.strDim(r.cont) +
